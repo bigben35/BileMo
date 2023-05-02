@@ -3,8 +3,9 @@
 namespace App\Repository;
 
 use App\Entity\User;
-use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use App\Entity\Client;
 use Doctrine\Persistence\ManagerRegistry;
+use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 
 /**
  * @extends ServiceEntityRepository<User>
@@ -38,6 +39,16 @@ class UserRepository extends ServiceEntityRepository
             $this->getEntityManager()->flush();
         }
     }
+
+
+    public function findUsersByClient(Client $client): array
+{
+    return $this->createQueryBuilder('u')
+        ->where('u.client = :client')
+        ->setParameter('client', $client)
+        ->getQuery()
+        ->getResult();
+}
 
 //    /**
 //     * @return User[] Returns an array of User objects
