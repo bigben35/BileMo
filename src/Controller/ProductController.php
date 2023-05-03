@@ -8,12 +8,16 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Serializer\SerializerInterface;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
+
+#[Route('/api', name: 'api_')]
+#[IsGranted('ROLE_USER', message: "Vous n'avez pas les droits suffisants pour l'accès aux produits")]
 class ProductController extends AbstractController
 {
     //endpoint to display all phones
-    #[Route('/api/products', name: 'products', methods: ['GET'])]
+    #[Route('/products', name: 'products', methods: ['GET'])]
     public function getAllProducts(ProductRepository $productRepository, SerializerInterface $serializer): JsonResponse
     {
 
@@ -25,7 +29,7 @@ class ProductController extends AbstractController
 
 
     //endpoint to display a phone with details
-    #[Route('/api/products/{id}', name: 'detailProduct', methods: ['GET'])]
+    #[Route('/products/{id}', name: 'detailProduct', methods: ['GET'])]
     public function getDetailProduct(SerializerInterface $serializer, Product $product): JsonResponse
     {
         $jsonProduct = $serializer->serialize($product, 'json');
