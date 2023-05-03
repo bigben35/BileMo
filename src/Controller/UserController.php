@@ -45,6 +45,7 @@ class UserController extends AbstractController
     }
 
 
+
     #[Route('/api/users', name:"createUser", methods: ['POST'])]
     #[IsGranted('ROLE_USER', message: "Vous n'avez pas les droits suffisants pour créer un utilisateur")]
     public function createUser(Request $request, SerializerInterface $serializer, EntityManagerInterface $em, UrlGeneratorInterface $urlGenerator, ClientRepository $clientRepository): JsonResponse
@@ -81,3 +82,4 @@ class UserController extends AbstractController
         return new JsonResponse(null, Response::HTTP_NO_CONTENT);
     }
     }
+
