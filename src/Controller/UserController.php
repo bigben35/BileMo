@@ -81,8 +81,13 @@ class UserController extends AbstractController
         $client = $this->getUser(); // Récupère le client connecté
         $user = $userRepository->findOneBy(['id' => $user->getId(), 'client' => $client]);
         if (null === $user) {
-            return new JsonResponse(null, Response::HTTP_NOT_FOUND);
+            return new JsonResponse('Vous n\'êtes pas autorisé à supprimer cet utilisateur.', Response::HTTP_FORBIDDEN);
         }
+
+        // Vérifier si le client est lié à l'utilisateur
+        // if ($user->getClient() !== $client) {
+        // return new JsonResponse('Vous n\'êtes pas autorisé à supprimer cet utilisateur.', Response::HTTP_FORBIDDEN);
+        // }
 
         $em->remove($user);
         $em->flush();
