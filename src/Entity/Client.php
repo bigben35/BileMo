@@ -9,8 +9,11 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: ClientRepository::class)]
+#[UniqueEntity(fields: ['email'], message: 'Cet email est déjà utilisé.')]
 class Client implements UserInterface, PasswordAuthenticatedUserInterface
 {
     #[ORM\Id]
@@ -21,6 +24,8 @@ class Client implements UserInterface, PasswordAuthenticatedUserInterface
 
     #[ORM\Column(length: 180, unique: true)]
     #[Groups(["getUsers"])]
+    #[Assert\NotBlank(message: "L'email est obligatoire")]
+    #[Assert\Email(message: "L'email '{{ value }}' n'est pas une adresse email valide.")]
     private ?string $email = null;
 
     #[ORM\Column]

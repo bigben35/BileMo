@@ -14,6 +14,7 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class UserController extends AbstractController
 {
@@ -30,7 +31,7 @@ class UserController extends AbstractController
 
 
     #[Route('/api/users/{id}', name: 'detailUser', methods: ['GET'])]
-    #[IsGranted('ROLE_USER', message: "Vous n'avez pas les droits suffisants pour accéder à la liste des utilisateurs")]
+    #[IsGranted('ROLE_USER', message: "Vous n'avez pas les droits suffisants pour accéder à l'utilisateur demandé")]
     public function getDetailUser(User $user, SerializerInterface $serializer, UserRepository $userRepository): JsonResponse
     {
         $client = $this->getUser(); // Récupère le client connecté
@@ -40,7 +41,7 @@ class UserController extends AbstractController
             $jsonUser = $serializer->serialize($user, 'json',['groups' => 'getUsers']);
             return new JsonResponse($jsonUser, Response::HTTP_OK, [], true);
         }
-        return new JsonResponse(null, Response::HTTP_NOT_FOUND);
+        return new JsonResponse(null, Response::HTTP_FORBIDDEN);
 
     }
 
@@ -48,11 +49,18 @@ class UserController extends AbstractController
 
     #[Route('/api/users', name:"createUser", methods: ['POST'])]
     #[IsGranted('ROLE_USER', message: "Vous n'avez pas les droits suffisants pour créer un utilisateur")]
-    public function createUser(Request $request, SerializerInterface $serializer, EntityManagerInterface $em, UrlGeneratorInterface $urlGenerator, ClientRepository $clientRepository): JsonResponse
+    public function createUser(Request $request, SerializerInterface $serializer, EntityManagerInterface $em, UrlGeneratorInterface $urlGenerator, ValidatorInterface $validator): JsonResponse
     {
         $client = $this->getUser(); // Récupère le client connecté
         $user = $serializer->deserialize($request->getContent(), User::class, 'json');
         $user->setClient($client);
+
+        // On vérifie les erreurs
+        $errors = $validator->validate($user);
+        if ($errors->count() > 0) {
+            return new JsonResponse($serializer->serialize($errors, 'json'), JsonResponse::HTTP_BAD_REQUEST, [], true);
+            //throw new HttpException(JsonResponse::HTTP_BAD_REQUEST, "La requête est invalide");
+        }
 
         $em->persist($user);
         $em->flush();
