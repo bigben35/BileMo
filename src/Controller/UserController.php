@@ -62,4 +62,22 @@ class UserController extends AbstractController
 
         return new JsonResponse($jsonUser, Response::HTTP_CREATED, ["Location" => $location], true);
     }
-}
+
+
+
+    #[Route('/api/users/{id}', name: 'deleteUser', methods: ['DELETE'])]
+    #[IsGranted('ROLE_USER', message: 'Vous n\'avez pas les droits suffisants pour supprimer un utilisateur')]
+    public function deleteUser(User $user, UserRepository $userRepository, EntityManagerInterface $em): JsonResponse 
+    {
+        $client = $this->getUser(); // Récupère le client connecté
+        $user = $userRepository->findOneBy(['id' => $user->getId(), 'client' => $client]);
+        if (null === $user) {
+            return new JsonResponse(null, Response::HTTP_NOT_FOUND);
+        }
+
+        $em->remove($user);
+        $em->flush();
+
+        return new JsonResponse(null, Response::HTTP_NO_CONTENT);
+    }
+    }
