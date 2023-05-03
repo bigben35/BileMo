@@ -23,7 +23,7 @@ class User
     #[Groups(["getUsers"])]
     private ?string $lastname = null;
 
-    #[ORM\Column(length: 255)]
+    #[ORM\Column(length: 255, unique: true)]
     #[Groups(["getUsers"])]
     private ?string $email = null;
 
