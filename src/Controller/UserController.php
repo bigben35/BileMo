@@ -16,7 +16,8 @@ class UserController extends AbstractController
     #[IsGranted('ROLE_USER', message: "Vous n'avez pas les droits suffisants pour accéder à la liste des utilisateurs")]
     public function getAllUsers(UserRepository $userRepository, SerializerInterface $serializer): JsonResponse
     {
-        $userList = $userRepository->findAll();
+        $client = $this->getUser(); // Récupère le client connecté
+        $userList = $userRepository->findUsersByClient($client);
 
         $jsonProductList = $serializer->serialize($userList, 'json', ['groups' => 'getUsers']);
         return new JsonResponse($jsonProductList, Response::HTTP_OK, [], true);
