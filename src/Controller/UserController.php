@@ -3,29 +3,50 @@
 namespace App\Controller;
 
 use App\Entity\User;
-use App\Repository\ClientRepository;
+use Psr\Log\LoggerInterface;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Knp\Component\Pager\PaginatorInterface;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Serializer\SerializerInterface;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
-use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class UserController extends AbstractController
 {
     #[Route('/api/users', name: 'users', methods: ['GET'])]
     #[IsGranted('ROLE_USER', message: "Vous n'avez pas les droits suffisants pour accéder à la liste des utilisateurs")]
-    public function getAllUsers(UserRepository $userRepository, SerializerInterface $serializer): JsonResponse
+    public function getAllUsers(UserRepository $userRepository, SerializerInterface $serializer, PaginatorInterface $paginator, Request $request, LoggerInterface $logger): JsonResponse
     {
         $client = $this->getUser(); // Récupère le client connecté
         $userList = $userRepository->findUsersByClient($client);
 
-        $jsonProductList = $serializer->serialize($userList, 'json', ['groups' => 'getUsers']);
+        //pagination
+        $page = $request->query->getInt('page', 1); // Numéro de page par défaut
+        $limit = $request->query->getInt('limit', 1); // Nombre d'utilisateurs par page par défaut
+
+        $pagination = $paginator->paginate(
+        $userList,/* query NOT result */
+        $page,/*page number*/
+        $limit/*limit per page*/
+        );
+
+        //pagination
+        $currentPage = $pagination->getCurrentPageNumber();
+        $lastPage = $pagination->getTotalItemCount() > 0 ? ceil($pagination->getTotalItemCount() / $pagination->getItemNumberPerPage()) : 1;
+
+        // Vérification que la page demandée existe
+        if ($currentPage > $lastPage) {
+            $logger->warning("La page demandée n'existe pas");
+            return new JsonResponse(['message' => "La page demandée n'existe pas"], Response::HTTP_NOT_FOUND);
+        }
+
+        $jsonProductList = $serializer->serialize($pagination->getItems(), 'json', ['groups' => 'getUsers']);
         return new JsonResponse($jsonProductList, Response::HTTP_OK, [], true);
     }
 

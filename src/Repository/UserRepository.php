@@ -50,6 +50,15 @@ class UserRepository extends ServiceEntityRepository
         ->getQuery()
         ->getResult();
 }
+// public function countUsersByClient(Client $client): int
+// {
+//     return $this->createQueryBuilder('u')
+//         ->select('COUNT(u.id)')
+//         ->where('u.client = :client')
+//         ->setParameter('client', $client)
+//         ->getQuery()
+//         ->getSingleScalarResult();
+// }
 
 //    /**
 //     * @return User[] Returns an array of User objects
