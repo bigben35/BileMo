@@ -6,11 +6,13 @@ use App\Entity\User;
 use Psr\Log\LoggerInterface;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Contracts\Cache\ItemInterface;
 use Knp\Component\Pager\PaginatorInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Contracts\Cache\TagAwareCacheInterface;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
@@ -21,33 +23,42 @@ class UserController extends AbstractController
 {
     #[Route('/api/users', name: 'users', methods: ['GET'])]
     #[IsGranted('ROLE_USER', message: "Vous n'avez pas les droits suffisants pour accéder à la liste des utilisateurs")]
-    public function getAllUsers(UserRepository $userRepository, SerializerInterface $serializer, PaginatorInterface $paginator, Request $request, LoggerInterface $logger): JsonResponse
+    public function getAllUsers(UserRepository $userRepository, SerializerInterface $serializer, PaginatorInterface $paginator, Request $request, LoggerInterface $logger, TagAwareCacheInterface $cachePool): JsonResponse
     {
         $client = $this->getUser(); // Récupère le client connecté
-        $userList = $userRepository->findUsersByClient($client);
-
+        
         //pagination
-        $page = $request->query->getInt('page', 1); // Numéro de page par défaut
-        $limit = $request->query->getInt('limit', 1); // Nombre d'utilisateurs par page par défaut
-
-        $pagination = $paginator->paginate(
+    $page = $request->query->getInt('page', 1); // Numéro de page par défaut
+    $limit = $request->query->getInt('limit', 10); // Nombre d'utilisateurs par page par défaut
+    $idCache = "getAllUsers-" . $page . "-" . $limit;
+    $logger->debug('Cache key: '.$idCache);
+    $userList = $cachePool->get($idCache, function (ItemInterface $item) use ($userRepository, $page, $limit, $logger, $client) {
+        $logger->warning("L'élément n'est pas encore en cache !\n");
+        $item->tag("usersCache");
+        $userList = $userRepository->findUsersByClient($client);
+        $logger->info("Récupération des utilisateurs depuis la base de données.");
+        return $userList;
+    });
+    
+    //pagination
+    $pagination = $paginator->paginate(
         $userList,/* query NOT result */
         $page,/*page number*/
         $limit/*limit per page*/
-        );
+    );
 
-        //pagination
-        $currentPage = $pagination->getCurrentPageNumber();
-        $lastPage = $pagination->getTotalItemCount() > 0 ? ceil($pagination->getTotalItemCount() / $pagination->getItemNumberPerPage()) : 1;
+    //pagination
+    $currentPage = $pagination->getCurrentPageNumber();
+    $lastPage = $pagination->getTotalItemCount() > 0 ? ceil($pagination->getTotalItemCount() / $pagination->getItemNumberPerPage()) : 1;
 
-        // Vérification que la page demandée existe
-        if ($currentPage > $lastPage) {
-            $logger->warning("La page demandée n'existe pas");
-            return new JsonResponse(['message' => "La page demandée n'existe pas"], Response::HTTP_NOT_FOUND);
-        }
+    // Vérification que la page demandée existe
+    if ($currentPage > $lastPage) {
+        $logger->warning("La page demandée n'existe pas");
+        return new JsonResponse(['message' => "La page demandée n'existe pas"], Response::HTTP_NOT_FOUND);
+    }
 
-        $jsonProductList = $serializer->serialize($pagination->getItems(), 'json', ['groups' => 'getUsers']);
-        return new JsonResponse($jsonProductList, Response::HTTP_OK, [], true);
+    $jsonProductList = $serializer->serialize($pagination, 'json', ['groups' => 'getUsers']);
+    return new JsonResponse($jsonProductList, Response::HTTP_OK, [], true);
     }
 
 
