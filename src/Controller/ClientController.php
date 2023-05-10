@@ -13,6 +13,7 @@ use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
+use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
@@ -72,6 +73,41 @@ class ClientController extends AbstractController
         $location = $urlGenerator->generate('detailClient', ['id' => $client->getId()], UrlGeneratorInterface::ABSOLUTE_URL);
 
         return new JsonResponse($jsonClient, Response::HTTP_CREATED, ["Location" => $location], true);
+    }
+
+
+    #[Route('/clients/{id}', name: 'updateClient', methods: ['PUT', 'PATCH'])]
+    #[IsGranted('ROLE_USER', message: "Vous n'avez pas les droits suffisants pour mettre à jour le client")]
+    public function updateClient(Request $request, Client $client, SerializerInterface $serializer, EntityManagerInterface $em, ValidatorInterface $validator, UserPasswordHasherInterface $passworhasher): JsonResponse
+    {
+        // Vérifier que le client connecté correspond à l'ID du client à modifier
+        $connectedClient = $this->getUser();
+        
+        if (!$connectedClient instanceof Client) {
+            return new JsonResponse(null, Response::HTTP_FORBIDDEN);
+        }
+        
+        if ($connectedClient->getId() !== $client->getId()) {
+            return new JsonResponse('Vous n\'êtes pas autorisé à modifier ce client.', Response::HTTP_FORBIDDEN);
+        }
+
+        // Modifier le client avec les données envoyées dans la requête
+        $serializer->deserialize($request->getContent(), Client::class, 'json', [AbstractNormalizer::OBJECT_TO_POPULATE => $client]);
+        $hashPassword = $passworhasher->hashPassword($client, $client->getPassword());
+        $client->setPassword($hashPassword);
+
+        // On vérifie les erreurs
+        $errors = $validator->validate($client);
+        if ($errors->count() > 0) {
+            return new JsonResponse($serializer->serialize($errors, 'json'), JsonResponse::HTTP_BAD_REQUEST, [], true);
+        }
+
+        $em->persist($client);
+        $em->flush();
+
+        $jsonClient = $serializer->serialize($client, 'json', ['groups' => 'getClients']);
+
+        return new JsonResponse($jsonClient, Response::HTTP_OK, [], true);
     }
 
 }
