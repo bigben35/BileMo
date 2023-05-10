@@ -49,7 +49,7 @@ class ClientController extends AbstractController
     }
 
     #[Route('/clients', name: 'createClient', methods: ['POST'])]
-    #[IsGranted('ROLE_USER', message: "Vous n'avez pas les droits suffisants pour l'accès aux clients")] //à modifier si je crée un role_admin (compte d'un développeur BileMo par ex)
+    // #[IsGranted('ROLE_USER', message: "Vous n'avez pas les droits suffisants pour l'accès aux clients")] //à modifier si je crée un role_admin (compte d'un développeur BileMo par ex)
     public function createClient(Request $request, SerializerInterface $serializer, EntityManagerInterface $em, UrlGeneratorInterface $urlGenerator, ValidatorInterface $validator, UserPasswordHasherInterface $passworhasher): JsonResponse
     {
         // $client = $this->getUser(); // Récupère le client connecté
