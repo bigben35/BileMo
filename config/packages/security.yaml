@@ -17,6 +17,7 @@ security:
         #     lazy: true
         #     provider: app_user_provider
 
+
 # documentation JWT 
         login:
             pattern: ^/api/login

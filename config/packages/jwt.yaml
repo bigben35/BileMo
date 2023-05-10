@@ -1,0 +1,4 @@
+lexik_jwt_authentication:
+    secret_key: '%env(APP_SECRET)%'
+    # See https://tools.ietf.org/html/rfc7519#section-4.1.4
+    token_ttl:        3600
