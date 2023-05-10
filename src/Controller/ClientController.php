@@ -110,4 +110,25 @@ class ClientController extends AbstractController
         return new JsonResponse($jsonClient, Response::HTTP_OK, [], true);
     }
 
+    #[Route('/clients/{id}', name: 'deleteClient', methods: ['DELETE'])]
+    #[IsGranted('ROLE_USER', message: "Vous n'avez pas les droits suffisants pour supprimer le client")]
+    public function deleteClient(Client $client, EntityManagerInterface $em): JsonResponse
+    {
+        // Vérifier que le client connecté correspond à l'ID du client à supprimer
+        $connectedClient = $this->getUser();
+        
+        if (!$connectedClient instanceof Client) {
+            return new JsonResponse(null, Response::HTTP_FORBIDDEN);
+        }
+        
+        if ($connectedClient->getId() !== $client->getId()) {
+            return new JsonResponse('Vous n\'êtes pas autorisé à supprimer ce client.', Response::HTTP_FORBIDDEN);
+        }
+        
+        $em->remove($client);
+        $em->flush();
+
+        return new JsonResponse(null, Response::HTTP_NO_CONTENT);
+    }
+
 }
