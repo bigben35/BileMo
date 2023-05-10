@@ -8,3 +8,9 @@ kernel:
 
 api_login_check:
     path: /api/login_check
+
+# route 'detailClient' pour pouvoir créer un nouveau client san serreur 500
+detailClient:
+    path: /clients/{id}
+    controller: App\Controller\ClientController::getDetailClient
+    methods: GET

@@ -15,22 +15,22 @@ class User
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(["getUsers"])]
+    #[Groups(["getUsers", "getClients"])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(["getUsers"])]
+    #[Groups(["getUsers", "getClients"])]
     #[Assert\NotBlank(message: "Le prénom est obligatoire")]
     #[Assert\Length(min: 2, max: 255, minMessage: "Le prénom doit faire au moins {{ limit }} caractères", maxMessage: "Le prénom ne peut pas faire plus de {{ limit }} caractères")]
     private ?string $firstname = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(["getUsers"])]
+    #[Groups(["getUsers", "getClients"])]
     #[Assert\NotBlank(message: "Le nom est obligatoire")]
     private ?string $lastname = null;
 
     #[ORM\Column(length: 255, unique: true)]
-    #[Groups(["getUsers"])]
+    #[Groups(["getUsers", "getClients"])]
     #[Assert\NotBlank(message: "L'email est obligatoire")]
     #[Assert\Email(message: "L'email '{{ value }}' n'est pas une adresse email valide.")]
     private ?string $email = null;
@@ -40,7 +40,7 @@ class User
 
     #[ORM\ManyToOne(inversedBy: 'users')]
     #[ORM\JoinColumn(nullable: false)]
-    #[Groups(["getUsers"])]
+    #[Groups(["getUsers", "getClients"])]
     private ?Client $client = null;
 
     public function __construct()
