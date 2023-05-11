@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\User;
+use DateTimeImmutable;
 use App\Repository\UserRepository;
 use JMS\Serializer\SerializerInterface;
 use Doctrine\ORM\EntityManagerInterface;
@@ -39,11 +40,11 @@ class UserController extends AbstractController
         $user = $userRepository->findOneBy(['id' => $user->getId(), 'client' => $client]);
 
         if ($user){
-            $context = SerializationContext::create()->setGroups(['getUsers']);
+            $context = SerializationContext::create()->setGroups(['getUsers', 'getClients']);
             $jsonUser = $serializer->serialize($user, 'json', $context);
             return new JsonResponse($jsonUser, Response::HTTP_OK, [], true);
         }
-        return new JsonResponse(null, Response::HTTP_FORBIDDEN);
+        return new JsonResponse("Vous n'avez pas l'autorisation pour voir cet utilisateur", Response::HTTP_FORBIDDEN);
 
     }
 
@@ -56,6 +57,8 @@ class UserController extends AbstractController
         $client = $this->getUser(); // Récupère le client connecté
         $user = $serializer->deserialize($request->getContent(), User::class, 'json');
         $user->setClient($client);
+        $createdAt = new DateTimeImmutable();
+        $user->setCreatedAt($createdAt);
 
         // On vérifie les erreurs
         $errors = $validator->validate($user);
@@ -67,7 +70,8 @@ class UserController extends AbstractController
         $em->persist($user);
         $em->flush();
 
-        $jsonUser = $serializer->serialize($user, 'json', ['groups' => 'getUsers']);
+        $context = SerializationContext::create()->setGroups(['getUsers', 'getClients']);
+        $jsonUser = $serializer->serialize($user, 'json', $context);
         
         $location = $urlGenerator->generate('detailUser', ['id' => $user->getId()], UrlGeneratorInterface::ABSOLUTE_URL);
 

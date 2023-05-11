@@ -92,9 +92,12 @@ class ClientController extends AbstractController
         }
 
         // Modifier le client avec les données envoyées dans la requête
-        $serializer->deserialize($request->getContent(), Client::class, 'json', [AbstractNormalizer::OBJECT_TO_POPULATE => $client]);
-        $hashPassword = $passworhasher->hashPassword($client, $client->getPassword());
+        $newClient = $serializer->deserialize($request->getContent(), Client::class, 'json');
+        $hashPassword = $passworhasher->hashPassword($newClient, $client->getPassword());
         $client->setPassword($hashPassword);
+        $client->setEmail($newClient->getEmail());
+        $client->setCompanyName($newClient->getCompanyName());
+        $client->setSiren($newClient->getSiren());
 
         // On vérifie les erreurs
         $errors = $validator->validate($client);
