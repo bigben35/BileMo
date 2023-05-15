@@ -36,7 +36,7 @@ class ProductController extends AbstractController
         $idCache = "getAllProducts-" . $page . "-" . $limit;
 
         $jsonProductList = $cache->get($idCache, function (ItemInterface $item) use ($productRepository, $page, $limit, $serializer) {
-            echo ("L'élément n'est pas encore en cache !\n");
+            // echo ("L'élément n'est pas encore en cache !\n");
             $item->tag("productsCache");
             $productList = $productRepository->findAllWithPagination($page, $limit);
             return $serializer->serialize($productList, 'json');
