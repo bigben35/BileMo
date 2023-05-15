@@ -45,8 +45,13 @@ class UserRepository extends ServiceEntityRepository
     public function findUsersByClient(Client $client): array
 {
     return $this->createQueryBuilder('u')
-        ->where('u.client = :client')
-        ->setParameter('client', $client)
+        // ->where('u.client = :client')
+        // ->setParameter('client', $client)
+        // ->getQuery()
+        // ->getResult();
+        ->join('u.client', 'c')
+        ->where('c.id = :clientId')
+        ->setParameter('clientId', $client->getId())
         ->getQuery()
         ->getResult();
 }

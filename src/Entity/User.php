@@ -4,12 +4,38 @@ namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 use App\Repository\UserRepository;
-use Symfony\Component\Serializer\Annotation\Groups;
+use JMS\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
+use Hateoas\Configuration\Annotation as Hateoas;
+
+/**
+ * @Hateoas\Relation(
+ *      "self",
+ *      href = @Hateoas\Route(
+ *          "detailUser",
+ *          parameters = { "id" = "expr(object.getId())" }
+ *      ),
+ *      exclusion = @Hateoas\Exclusion(groups="getUsers", excludeIf="expr(not is_granted('ROLE_USER'))"),
+ * )
+ *
+ *  * @Hateoas\Relation(
+ *     "delete",
+ *     href = @Hateoas\Route(
+ *         "deleteUser",
+ *         parameters = { "id" = "expr(object.getId())" }
+ *     ),
+ *     exclusion = @Hateoas\Exclusion(groups="getUsers", excludeIf="expr(not is_granted('ROLE_USER'))"),
+ * )
+ */
+
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[UniqueEntity(fields: ['email'], message: 'Cet email est déjà utilisé.')]
+#[ORM\HasLifecycleCallbacks]
+
+
+
 class User
 {
     #[ORM\Id]
@@ -35,7 +61,7 @@ class User
     #[Assert\Email(message: "L'email '{{ value }}' n'est pas une adresse email valide.")]
     private ?string $email = null;
 
-    #[ORM\Column]
+    #[ORM\Column(name: "createdAt", type: "datetime_immutable")]
     private ?\DateTimeImmutable $createdAt;
 
     #[ORM\ManyToOne(inversedBy: 'users')]
@@ -46,6 +72,16 @@ class User
     public function __construct()
     {
         $this->createdAt = new \DateTimeImmutable();
+    }
+
+    /**
+     * @ORM\PrePersist
+     */
+    public function prePersist(): void
+    {
+        if ($this->createdAt === null) {
+            $this->createdAt = new \DateTimeImmutable();
+        }
     }
     
 

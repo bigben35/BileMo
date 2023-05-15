@@ -3,17 +3,19 @@
 namespace App\Controller;
 
 use App\Entity\User;
+use DateTimeImmutable;
 use App\Repository\UserRepository;
+use JMS\Serializer\SerializerInterface;
 use Doctrine\ORM\EntityManagerInterface;
+use JMS\Serializer\SerializationContext;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\Serializer\SerializerInterface;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
-use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class UserController extends AbstractController
 {
@@ -24,7 +26,8 @@ class UserController extends AbstractController
         $client = $this->getUser(); // Récupère le client connecté
         $userList = $userRepository->findUsersByClient($client);
 
-        $jsonProductList = $serializer->serialize($userList, 'json', ['groups' => 'getUsers']);
+        $context = SerializationContext::create()->setGroups(['getUsers']);
+        $jsonProductList = $serializer->serialize($userList, 'json', $context);
         return new JsonResponse($jsonProductList, Response::HTTP_OK, [], true);
     }
 
@@ -37,10 +40,11 @@ class UserController extends AbstractController
         $user = $userRepository->findOneBy(['id' => $user->getId(), 'client' => $client]);
 
         if ($user){
-            $jsonUser = $serializer->serialize($user, 'json',['groups' => 'getUsers']);
+            $context = SerializationContext::create()->setGroups(['getUsers', 'getClients']);
+            $jsonUser = $serializer->serialize($user, 'json', $context);
             return new JsonResponse($jsonUser, Response::HTTP_OK, [], true);
         }
-        return new JsonResponse(null, Response::HTTP_FORBIDDEN);
+        return new JsonResponse("Vous n'avez pas l'autorisation pour voir cet utilisateur", Response::HTTP_FORBIDDEN);
 
     }
 
@@ -53,6 +57,8 @@ class UserController extends AbstractController
         $client = $this->getUser(); // Récupère le client connecté
         $user = $serializer->deserialize($request->getContent(), User::class, 'json');
         $user->setClient($client);
+        $createdAt = new DateTimeImmutable();
+        $user->setCreatedAt($createdAt);
 
         // On vérifie les erreurs
         $errors = $validator->validate($user);
@@ -64,7 +70,8 @@ class UserController extends AbstractController
         $em->persist($user);
         $em->flush();
 
-        $jsonUser = $serializer->serialize($user, 'json', ['groups' => 'getUsers']);
+        $context = SerializationContext::create()->setGroups(['getUsers', 'getClients']);
+        $jsonUser = $serializer->serialize($user, 'json', $context);
         
         $location = $urlGenerator->generate('detailUser', ['id' => $user->getId()], UrlGeneratorInterface::ABSOLUTE_URL);
 
