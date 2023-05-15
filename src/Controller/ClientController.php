@@ -4,16 +4,16 @@ namespace App\Controller;
 
 use App\Entity\Client;
 use App\Repository\ClientRepository;
+use JMS\Serializer\SerializerInterface;
 use Doctrine\ORM\EntityManagerInterface;
+use JMS\Serializer\SerializationContext;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
-use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
@@ -28,7 +28,8 @@ class ClientController extends AbstractController
 
         $clientList = $clientRepository->findAll();
 
-        $jsonClientList = $serializer->serialize($clientList, 'json', ['groups' => 'getClients']);
+        $context = SerializationContext::create()->setGroups(['getClients']);
+        $jsonClientList = $serializer->serialize($clientList, 'json', $context);
         return new JsonResponse($jsonClientList, Response::HTTP_OK, [], true);
     }
 
@@ -37,11 +38,18 @@ class ClientController extends AbstractController
     #[IsGranted('ROLE_USER', message: "Vous n'avez pas les droits suffisants pour accéder au client demandé")]
     public function getDetailClient(Client $client, SerializerInterface $serializer, ClientRepository $clientRepository): JsonResponse
     {
-        // $client = $this->getUser(); // Récupère le client connecté
+        //$client = $this->getUser(); // Récupère le client connecté
+        $authenticatedUser = $this->getUser();
+
+    // Vérifier si l'utilisateur authentifié est le propriétaire du compte
+    if ($authenticatedUser->getId() !== $client->getId()) {
+        return new JsonResponse("Vous n'avez pas l'autorisation pour accéder à ce client", Response::HTTP_FORBIDDEN);
+    }
         $client = $clientRepository->findOneBy(['id' => $client->getId()]);
 
         if ($client){
-            $jsonClient = $serializer->serialize($client, 'json',['groups' => 'getClients']);
+            $context = SerializationContext::create()->setGroups(['getClients']);
+            $jsonClient = $serializer->serialize($client, 'json',$context);
             return new JsonResponse($jsonClient, Response::HTTP_OK, [], true);
         }
         return new JsonResponse(null, Response::HTTP_FORBIDDEN);
@@ -68,7 +76,8 @@ class ClientController extends AbstractController
         $em->persist($client);
         $em->flush();
 
-        $jsonClient = $serializer->serialize($client, 'json', ['groups' => 'getClients']);
+        $context = SerializationContext::create()->setGroups(['getClients']);
+        $jsonClient = $serializer->serialize($client, 'json', $context);
         
         $location = $urlGenerator->generate('detailClient', ['id' => $client->getId()], UrlGeneratorInterface::ABSOLUTE_URL);
 
@@ -93,7 +102,7 @@ class ClientController extends AbstractController
 
         // Modifier le client avec les données envoyées dans la requête
         $newClient = $serializer->deserialize($request->getContent(), Client::class, 'json');
-        $hashPassword = $passworhasher->hashPassword($newClient, $client->getPassword());
+        $hashPassword = $passworhasher->hashPassword($newClient, $newClient->getPassword());
         $client->setPassword($hashPassword);
         $client->setEmail($newClient->getEmail());
         $client->setCompanyName($newClient->getCompanyName());
@@ -108,10 +117,12 @@ class ClientController extends AbstractController
         $em->persist($client);
         $em->flush();
 
-        $jsonClient = $serializer->serialize($client, 'json', ['groups' => 'getClients']);
+        $context = SerializationContext::create()->setGroups(['getClients']);
+        $jsonClient = $serializer->serialize($client, 'json', $context);
 
         return new JsonResponse($jsonClient, Response::HTTP_OK, [], true);
     }
+
 
     #[Route('/clients/{id}', name: 'deleteClient', methods: ['DELETE'])]
     #[IsGranted('ROLE_USER', message: "Vous n'avez pas les droits suffisants pour supprimer le client")]
