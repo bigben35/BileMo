@@ -9,7 +9,6 @@ use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Hateoas\Configuration\Annotation as Hateoas;
 
-
 /**
  * @Hateoas\Relation(
  *      "self",
@@ -17,17 +16,26 @@ use Hateoas\Configuration\Annotation as Hateoas;
  *          "detailUser",
  *          parameters = { "id" = "expr(object.getId())" }
  *      ),
- *      exclusion = @Hateoas\Exclusion(groups="getUsers")
+ *      exclusion = @Hateoas\Exclusion(groups="getUsers", excludeIf="expr(not is_granted('ROLE_USER'))"),
  * )
  *
+ *  * @Hateoas\Relation(
+ *     "delete",
+ *     href = @Hateoas\Route(
+ *         "deleteUser",
+ *         parameters = { "id" = "expr(object.getId())" }
+ *     ),
+ *     exclusion = @Hateoas\Exclusion(groups="getUsers", excludeIf="expr(not is_granted('ROLE_USER'))"),
+ * )
  */
 
- /**
- * @ORM\HasLifecycleCallbacks()
- */
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[UniqueEntity(fields: ['email'], message: 'Cet email est déjà utilisé.')]
+#[ORM\HasLifecycleCallbacks]
+
+
+
 class User
 {
     #[ORM\Id]
