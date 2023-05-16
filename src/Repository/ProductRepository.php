@@ -39,6 +39,23 @@ class ProductRepository extends ServiceEntityRepository
         }
     }
 
+
+    // pagination products 
+    public function findAllWithPagination($page, $limit) {
+        $qb = $this->createQueryBuilder('b')
+            ->setFirstResult(($page - 1) * $limit)
+            ->setMaxResults($limit);
+            return $qb->getQuery()->getResult();
+        }
+
+        public function getTotalPages(): int
+    {
+        $qb = $this->createQueryBuilder('p');
+        $qb->select($qb->expr()->count('p.id'));
+
+        return $qb->getQuery()->getSingleScalarResult();
+    }
+
 //    /**
 //     * @return Product[] Returns an array of Product objects
 //     */
