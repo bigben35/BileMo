@@ -31,7 +31,7 @@ class UserController extends AbstractController
         
         //pagination
     $page = $request->query->getInt('page', 1); // Numéro de page par défaut
-    $limit = $request->query->getInt('limit', 10); // Nombre d'utilisateurs par page par défaut
+    $limit = $request->query->getInt('limit', 5); // Nombre d'utilisateurs par page par défaut
     $idCache = "getAllUsers-" . $page . "-" . $limit;
     $logger->debug('Cache key: '.$idCache);
     $userList = $cachePool->get($idCache, function (ItemInterface $item) use ($userRepository, $page, $limit, $logger, $client) {
@@ -61,7 +61,7 @@ class UserController extends AbstractController
     }
 
         $context = SerializationContext::create()->setGroups(['getUsers']);
-        $jsonProductList = $serializer->serialize($userList, 'json', $context);
+        $jsonProductList = $serializer->serialize($pagination->getItems(), 'json', $context);
         return new JsonResponse($jsonProductList, Response::HTTP_OK, [], true);
 
     }
@@ -117,7 +117,7 @@ class UserController extends AbstractController
 
     #[Route('/api/users/{id}', name: 'deleteUser', methods: ['DELETE'])]
     #[IsGranted('ROLE_USER', message: 'Vous n\'avez pas les droits suffisants pour supprimer un utilisateur')]
-    public function deleteUser(User $user, UserRepository $userRepository, EntityManagerInterface $em): JsonResponse 
+    public function deleteUser(User $user, UserRepository $userRepository, EntityManagerInterface $em, TagAwareCacheInterface $cache): JsonResponse 
     {
         $client = $this->getUser(); // Récupère le client connecté
         $user = $userRepository->findOneBy(['id' => $user->getId(), 'client' => $client]);
@@ -130,6 +130,7 @@ class UserController extends AbstractController
         // return new JsonResponse('Vous n\'êtes pas autorisé à supprimer cet utilisateur.', Response::HTTP_FORBIDDEN);
         // }
 
+        $cache->invalidateTags(["usersCache"]);
         $em->remove($user);
         $em->flush();
 

@@ -58,16 +58,16 @@ class UserRepository extends ServiceEntityRepository
 
         return $users;
 
-    return $this->createQueryBuilder('u')
-        // ->where('u.client = :client')
-        // ->setParameter('client', $client)
-        // ->getQuery()
-        // ->getResult();
-        ->join('u.client', 'c')
-        ->where('c.id = :clientId')
-        ->setParameter('clientId', $client->getId())
-        ->getQuery()
-        ->getResult();
+    // return $this->createQueryBuilder('u')
+    //     // ->where('u.client = :client')
+    //     // ->setParameter('client', $client)
+    //     // ->getQuery()
+    //     // ->getResult();
+    //     ->join('u.client', 'c')
+    //     ->where('c.id = :clientId')
+    //     ->setParameter('clientId', $client->getId())
+    //     ->getQuery()
+    //     ->getResult();
 
 }
 // public function countUsersByClient(Client $client): int
