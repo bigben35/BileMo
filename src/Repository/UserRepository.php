@@ -5,6 +5,7 @@ namespace App\Repository;
 use App\Entity\User;
 use App\Entity\Client;
 use Doctrine\Persistence\ManagerRegistry;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 
 /**
@@ -44,6 +45,19 @@ class UserRepository extends ServiceEntityRepository
     // méthode qui récupère la liste des utilisateurs associés à un client spécifique; utilisée dans le UserController 
     public function findUsersByClient(Client $client): array
 {
+    $users = $this->createQueryBuilder('u')
+            ->andWhere('u.client = :client')
+            ->setParameter('client', $client)
+            ->orderBy('u.id', 'ASC')
+            ->getQuery()
+            ->getResult();
+
+        if (!$users) {
+            throw new NotFoundHttpException('Aucun utilisateur n\'a été trouvé pour ce client.');
+        }
+
+        return $users;
+
     return $this->createQueryBuilder('u')
         // ->where('u.client = :client')
         // ->setParameter('client', $client)
@@ -54,7 +68,17 @@ class UserRepository extends ServiceEntityRepository
         ->setParameter('clientId', $client->getId())
         ->getQuery()
         ->getResult();
+
 }
+// public function countUsersByClient(Client $client): int
+// {
+//     return $this->createQueryBuilder('u')
+//         ->select('COUNT(u.id)')
+//         ->where('u.client = :client')
+//         ->setParameter('client', $client)
+//         ->getQuery()
+//         ->getSingleScalarResult();
+// }
 
 //    /**
 //     * @return User[] Returns an array of User objects
