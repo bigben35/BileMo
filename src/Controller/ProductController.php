@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\Product;
+use Psr\Log\LoggerInterface;
 use App\Repository\ProductRepository;
 use JMS\Serializer\SerializerInterface;
 use Symfony\Contracts\Cache\ItemInterface;
@@ -20,7 +21,7 @@ class ProductController extends AbstractController
 {
     //endpoint to display all phones
     #[Route('/products', name: 'products', methods: ['GET'])]
-    public function getAllProducts(ProductRepository $productRepository, SerializerInterface $serializer, Request $request, TagAwareCacheInterface $cache): JsonResponse
+    public function getAllProducts(ProductRepository $productRepository, SerializerInterface $serializer, Request $request, LoggerInterface $logger, TagAwareCacheInterface $cache): JsonResponse
     {
 
         // $productList = $productRepository->findAll();
@@ -34,11 +35,14 @@ class ProductController extends AbstractController
     }
 
         $idCache = "getAllProducts-" . $page . "-" . $limit;
+        $logger->debug('Cache key: '.$idCache);
 
-        $jsonProductList = $cache->get($idCache, function (ItemInterface $item) use ($productRepository, $page, $limit, $serializer) {
+        $jsonProductList = $cache->get($idCache, function (ItemInterface $item) use ($productRepository, $page, $limit, $logger, $serializer) {
             // echo ("L'élément n'est pas encore en cache !\n");
+            $logger->warning("L'élément n'est pas encore en cache !\n");
             $item->tag("productsCache");
             $productList = $productRepository->findAllWithPagination($page, $limit);
+            $logger->info("Récupération des utilisateurs depuis la base de données.");
             return $serializer->serialize($productList, 'json');
         });
 
