@@ -33,6 +33,7 @@ class UserController extends AbstractController
     $idCache = "getAllUsers-" . $page . "-" . $limit;
     $logger->debug('Cache key: '.$idCache);
     $userList = $cachePool->get($idCache, function (ItemInterface $item) use ($userRepository, $page, $limit, $logger, $client) {
+        // echo "L'élément n'est pas encore en cache !\n";
         $logger->warning("L'élément n'est pas encore en cache !\n");
         $item->tag("usersCache");
         $userList = $userRepository->findUsersByClient($client);
@@ -42,9 +43,9 @@ class UserController extends AbstractController
     
     //pagination
     $pagination = $paginator->paginate(
-        $userList,/* query NOT result */
-        $page,/*page number*/
-        $limit/*limit per page*/
+    $userList,/* query NOT result */
+    $page,/*page number*/
+    $limit/*limit per page*/
     );
 
     //pagination

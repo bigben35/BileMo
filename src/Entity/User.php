@@ -35,7 +35,7 @@ class User
     #[Assert\Email(message: "L'email '{{ value }}' n'est pas une adresse email valide.")]
     private ?string $email = null;
 
-    #[ORM\Column]
+    #[ORM\Column(type: 'datetime_immutable')]
     private ?\DateTimeImmutable $createdAt;
 
     #[ORM\ManyToOne(inversedBy: 'users')]
