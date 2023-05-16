@@ -16,7 +16,6 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Contracts\Cache\TagAwareCacheInterface;
-use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
@@ -60,10 +59,6 @@ class UserController extends AbstractController
         $logger->warning("La page demandée n'existe pas");
         return new JsonResponse(['message' => "La page demandée n'existe pas"], Response::HTTP_NOT_FOUND);
     }
-
-
-    $jsonProductList = $serializer->serialize($pagination, 'json', ['groups' => 'getUsers']);
-    return new JsonResponse($jsonProductList, Response::HTTP_OK, [], true);
 
         $context = SerializationContext::create()->setGroups(['getUsers']);
         $jsonProductList = $serializer->serialize($userList, 'json', $context);

@@ -47,10 +47,6 @@
             "./migrations/.gitignore"
         ]
     },
-
-    "knplabs/knp-paginator-bundle": {
-        "version": "v6.2.0"
-
     "jms/serializer-bundle": {
         "version": "5.2",
         "recipe": {
@@ -58,11 +54,10 @@
             "branch": "main",
             "version": "4.0",
             "ref": "cc04e10cf7171525b50c18b36004edf64cb478be"
-        },
-        "files": [
-            "./config/packages/jms_serializer.yaml"
-        ]
-
+        }
+    },
+    "knplabs/knp-paginator-bundle": {
+        "version": "v6.2.0"
     },
     "lexik/jwt-authentication-bundle": {
         "version": "2.18",
