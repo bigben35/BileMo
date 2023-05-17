@@ -54,10 +54,10 @@
             "branch": "main",
             "version": "4.0",
             "ref": "cc04e10cf7171525b50c18b36004edf64cb478be"
-        },
-        "files": [
-            "./config/packages/jms_serializer.yaml"
-        ]
+        }
+    },
+    "knplabs/knp-paginator-bundle": {
+        "version": "v6.2.0"
     },
     "lexik/jwt-authentication-bundle": {
         "version": "2.18",
@@ -148,6 +148,18 @@
             "ref": "fadbfe33303a76e25cb63401050439aa9b1a9c7f"
         }
     },
+    "symfony/monolog-bundle": {
+        "version": "3.8",
+        "recipe": {
+            "repo": "github.com/symfony/recipes",
+            "branch": "main",
+            "version": "3.7",
+            "ref": "213676c4ec929f046dfde5ea8e97625b81bc0578"
+        },
+        "files": [
+            "./config/packages/monolog.yaml"
+        ]
+    },
     "symfony/routing": {
         "version": "6.0",
         "recipe": {
@@ -184,6 +196,13 @@
         "files": [
             "./config/packages/twig.yaml",
             "./templates/base.html.twig"
+    "symfony/translation": {
+           "version": "5.3",
+           "ref": "da64f5a2b6d96f5dc24914517c0350a5f91dee43"
+        },
+        "files": [
+            "./config/packages/translation.yaml",
+            "./translations/.gitignore"
         ]
     },
     "symfony/validator": {
