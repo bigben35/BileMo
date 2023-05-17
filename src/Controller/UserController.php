@@ -66,6 +66,17 @@ class UserController extends AbstractController
     }
 
 
+    /**
+     * Cette méthode permet de récupérer (GET) le détail d'un utilisateur en fonction de son id.
+     *
+     * @OA\Tag(name="Users")
+     * 
+     * @param User $user
+     * @param UserRepository $userRepository
+     * @param SerializerInterface $serializer
+     * @return JsonResponse
+     */
+
     #[Route('/api/users/{id}', name: 'detailUser', methods: ['GET'])]
     #[IsGranted('ROLE_USER', message: "Vous n'avez pas les droits suffisants pour accéder à l'utilisateur demandé")]
     public function getDetailUser(User $user, SerializerInterface $serializer, UserRepository $userRepository): JsonResponse
@@ -83,6 +94,34 @@ class UserController extends AbstractController
     }
 
 
+    /**
+     * Cette méthode permet de créer (POST) un nouvel utilisateur.
+     * 
+     * exemple à mettre dans body pour créer un nouvel utilisateur. "email" doit être unique.
+     * {
+     * "firstname": "prénom 10",
+     * "lastname": "nom 10",
+     * "email": "email11@g.com"
+     * }
+     *
+     * @OA\RequestBody(@Model(type=User::class, groups={"createUser"}))
+     * @OA\Response(
+     *     response=201,
+     *      description="Retourne le détail de l'utilisateur créé lié au client",
+     *     @OA\JsonContent(
+     *        type="array",
+     *        @OA\Items(ref=@Model(type=User::class, groups={"getUsers"}))
+     *     )
+     * )
+     * @OA\Tag(name="Users")
+     *
+     * @param Request $request
+     * @param SerializerInterface $serializer
+     * @param EntityManagerInterface $em
+     * @param UrlGeneratorInterface $urlGenerator
+     * @param ValidatorInterface $validator
+     * @return JsonResponse
+     */
 
     #[Route('/api/users', name:"createUser", methods: ['POST'])]
     #[IsGranted('ROLE_USER', message: "Vous n'avez pas les droits suffisants pour créer un utilisateur")]
@@ -113,6 +152,18 @@ class UserController extends AbstractController
     }
 
 
+
+    /**
+     * Cette méthode supprime un utilisateur en fonction de son id. 
+     * En cascade, les utilisateurs associés aux clients seront eux aussi supprimés. 
+     * 
+     * @OA\Tag(name="Users")
+     * 
+     * @param User $user
+     * @param UserRepository $userRepository
+     * @param EntityManagerInterface $em
+     * @return JsonResponse
+     */
 
     #[Route('/api/users/{id}', name: 'deleteUser', methods: ['DELETE'])]
     #[IsGranted('ROLE_USER', message: 'Vous n\'avez pas les droits suffisants pour supprimer un utilisateur')]

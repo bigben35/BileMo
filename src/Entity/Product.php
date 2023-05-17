@@ -30,15 +30,19 @@ class Product
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
+    #[Groups(['getProducts'])]
     private ?string $brand = null;
 
     #[ORM\Column(length: 255)]
+    #[Groups(['getProducts'])]
     private ?string $model = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
+    #[Groups(['getProducts'])]
     private ?string $description = null;
 
     #[ORM\Column]
+    #[Groups(['getProducts'])]
     private ?float $price = null;
 
     public function getId(): ?int
