@@ -20,7 +20,7 @@ Générer vos clés publiques et privées avec ces 2 commandes :
 **openssl pkey -in config/jwt/private.pem -out config/jwt/public.pem -pubout**  
 Pensez à noter vos passwords !
 Faire un **composer require symfony/console** pour pouvoir utiliser la commande symfony console au lieu de php/bin console (au choix de la personne). 
-Créer une base de données dans PhpMyAdmin (par exemple) avec le nom souhaité. Il sera utilisé dans le fichier .env pour permettre la connexion entre l'application et la base de données. Dupliquer le fichier .env et nommez-le .env.local. Pour une question de sécurité, c'est ici que vous allez mettre vos informations de connexions.   Créer la base de données : **symfony console doctrine:database:create**    
+Créer une base de données dans PhpMyAdmin (par exemple) avec le nom souhaité. Il sera utilisé dans le fichier .env pour permettre la connexion entre l'application et la base de données. Dupliquer le fichier .env et nommez-le .env.local. Pour une question de sécurité, c'est ici que vous allez mettre vos informations de connexions.  Créer la base de données : **symfony console doctrine:database:create**    
 Effectuer les migrations : **symfony console doctrine:migrations:migrate**  
 Charger les fixtures (données de démonstration) : **symfony console doctrine:fixtures:load**, pour avoir des données (Clients, Utilisateurs et Téléphones).  
 Démarrer le serveur Symfony : **symfony server:start**  
