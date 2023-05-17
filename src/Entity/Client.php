@@ -39,6 +39,7 @@ class Client implements UserInterface, PasswordAuthenticatedUserInterface
      * @var string The hashed password
      */
     #[ORM\Column]
+    #[Groups(["getUsers", "getClients"])]
     private ?string $password = null;
 
     #[ORM\Column(length: 255)]

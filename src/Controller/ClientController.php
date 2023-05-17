@@ -16,11 +16,31 @@ use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
+use Nelmio\ApiDocBundle\Annotation\Model;
+use Nelmio\ApiDocBundle\Annotation\Security;
+use OpenApi\Annotations as OA;
 
 #[Route('/api', name: 'api_')]
 #[IsGranted('ROLE_USER', message: "Vous n'avez pas les droits suffisants pour l'accès aux clients")] //à modifier si je crée un role_admin (compte d'un développeur BileMo par ex)
 class ClientController extends AbstractController
 {
+    /**
+     * Cette méthode permet de récupérer (GET) l'ensemble des clients.
+     * @OA\Response(
+     *     response=200,
+     *     description="Retourne la liste des clients",
+     *     @OA\JsonContent(
+     *        type="array",
+     *        @OA\Items(ref=@Model(type=Client::class, groups={"getClients"}))
+     *     )
+     * )
+     * @OA\Tag(name="Clients")
+     *
+     * @param ClientRepository $clientRepositoryry
+     * @param SerializerInterface $serializer
+     * @return JsonResponse
+     */
+
     //endpoint to display all clients
     #[Route('/clients', name: 'clients', methods: ['GET'])]
     public function getAllClients(ClientRepository $clientRepository, SerializerInterface $serializer): JsonResponse
@@ -34,6 +54,16 @@ class ClientController extends AbstractController
     }
 
 
+    /**
+     * Cette route permet (GET) de récupérer un client en détail grâce à son ID.
+     *
+     * @OA\Tag(name="Clients")
+     * 
+     * @param Client $client
+     * @param ClientRepository $clientRepository
+     * @param SerializerInterface $serializer
+     * @return JsonResponse
+     */
     #[Route('/clients/{id}', name: 'detailClient', methods: ['GET'])]
     #[IsGranted('ROLE_USER', message: "Vous n'avez pas les droits suffisants pour accéder au client demandé")]
     public function getDetailClient(Client $client, SerializerInterface $serializer, ClientRepository $clientRepository): JsonResponse
@@ -56,6 +86,35 @@ class ClientController extends AbstractController
 
     }
 
+    /**
+     * Cette méthode permet de créer (POST) un nouveau client.
+     * 
+     * exemple à mettre dans body pour créer un nouveau client. "email", "company_name" et "siren" doivent être uniques.
+     * {
+     *  "email": "nomcompany2@g.com",
+     *  "password": "password",
+     *  "company_name": "nom de l'entreprise2",
+     *  "siren": "1234656462"
+     * }
+     *
+     * @OA\RequestBody(@Model(type=Client::class, groups={"createClient"}))
+     * @OA\Response(
+     *     response=201,
+     *      description="Retourne le détail du client créé",
+     *     @OA\JsonContent(
+     *        type="array",
+     *        @OA\Items(ref=@Model(type=Client::class, groups={"getClients"}))
+     *     )
+     * )
+     * @OA\Tag(name="Clients")
+     *
+     * @param Request $request
+     * @param SerializerInterface $serializer
+     * @param EntityManagerInterface $em
+     * @param UrlGeneratorInterface $urlGenerator
+     * @param ValidatorInterface $validator
+     * @return JsonResponse
+     */
     #[Route('/clients', name: 'createClient', methods: ['POST'])]
     // #[IsGranted('ROLE_USER', message: "Vous n'avez pas les droits suffisants pour l'accès aux clients")] //à modifier si je crée un role_admin (compte d'un développeur BileMo par ex)
     public function createClient(Request $request, SerializerInterface $serializer, EntityManagerInterface $em, UrlGeneratorInterface $urlGenerator, ValidatorInterface $validator, UserPasswordHasherInterface $passworhasher): JsonResponse
@@ -66,6 +125,9 @@ class ClientController extends AbstractController
         // Encodage du mot de passe du client
         $hashPassword = $passworhasher->hashPassword($client, $client->getPassword());
         $client->setPassword($hashPassword);
+
+        // Attribution du rôle ROLE_USER
+        $client->setRoles(['ROLE_USER']);
 
         // On vérifie les erreurs
         $errors = $validator->validate($client);
@@ -84,6 +146,27 @@ class ClientController extends AbstractController
         return new JsonResponse($jsonClient, Response::HTTP_CREATED, ["Location" => $location], true);
     }
 
+
+    /**
+     * Cette méthode permet de mettre à jour ('PUT', 'PATCH') un client si c'est bien le client lui-même qui se modifie. 
+     * Exemple de données :
+     * {
+     *  "email": "john.doe1@g.com",
+     *  "password": "password",
+     *  "company_name": "Example Inc.1",
+     *  "siren": "123456789005"
+     * }
+     * 
+     *  
+     * @OA\Tag(name="Clients")
+     * 
+     * @param Request $request
+     * @param SerializerInterface $serializer
+     * @param EntityManagerInterface $em
+     * @param ValidatorInterface $validator
+     * @param UserPasswordHasherInterface $passworhasher
+     * @return JsonResponse
+     */
 
     #[Route('/clients/{id}', name: 'updateClient', methods: ['PUT', 'PATCH'])]
     #[IsGranted('ROLE_USER', message: "Vous n'avez pas les droits suffisants pour mettre à jour le client")]
@@ -123,6 +206,18 @@ class ClientController extends AbstractController
         return new JsonResponse($jsonClient, Response::HTTP_OK, [], true);
     }
 
+
+    /**
+     * Cette méthode supprime ('DELETE') un client en fonction de son id. 
+     * En cascade, les utilisateurs associés aux clients seront aux aussi supprimés. 
+     *
+     *  
+     * @OA\Tag(name="Clients")
+     * 
+     * @param Client $client
+     * @param EntityManagerInterface $em
+     * @return JsonResponse
+     */
 
     #[Route('/clients/{id}', name: 'deleteClient', methods: ['DELETE'])]
     #[IsGranted('ROLE_USER', message: "Vous n'avez pas les droits suffisants pour supprimer le client")]

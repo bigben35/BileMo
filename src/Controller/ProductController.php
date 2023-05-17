@@ -14,11 +14,45 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Contracts\Cache\TagAwareCacheInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Nelmio\ApiDocBundle\Annotation\Model;
+use Nelmio\ApiDocBundle\Annotation\Security;
+use OpenApi\Annotations as OA;
+
 
 #[Route('/api', name: 'api_')]
 #[IsGranted('ROLE_USER', message: "Vous n'avez pas les droits suffisants pour l'accès aux produits")]
 class ProductController extends AbstractController
 {
+    /**
+     * Cette méthode permet de récupérer (GET) l'ensemble des produits (téléphones).
+     * @OA\Response(
+     *     response=200,
+     *     description="Retourne la liste des produits",
+     *     @OA\JsonContent(
+     *        type="array",
+     *        @OA\Items(ref=@Model(type=Product::class, groups={"getProducts"}))
+     *     )
+     * )
+     * @OA\Parameter(
+     *     name="page",
+     *     in="query",
+     *     description="La page que l'on veut récupérer",
+     *     @OA\Schema(type="int")
+     * )
+     *
+     * @OA\Parameter(
+     *     name="limit",
+     *     in="query",
+     *     description="Le nombre d'éléments que l'on veut récupérer",
+     *     @OA\Schema(type="int")
+     * )
+     * @OA\Tag(name="Products")
+     *
+     * @param ProductRepository $productRepository
+     * @param SerializerInterface $serializer
+     * @param Request $request
+     * @return JsonResponse
+     */
     //endpoint to display all phones
     #[Route('/products', name: 'products', methods: ['GET'])]
     public function getAllProducts(ProductRepository $productRepository, SerializerInterface $serializer, Request $request, LoggerInterface $logger, TagAwareCacheInterface $cache): JsonResponse
@@ -50,6 +84,15 @@ class ProductController extends AbstractController
     }
 
 
+    /**
+     * Cette route permet (GET) de récupérer un produit (téléphone) en détail grâce à son ID.
+     *
+     * @OA\Tag(name="Products")
+     * 
+     * @param Product $product
+     * @param SerializerInterface $serializer
+     * @return JsonResponse
+     */
     //endpoint to display a phone with details
     #[Route('/products/{id}', name: 'detailProduct', methods: ['GET'])]
     public function getDetailProduct(SerializerInterface $serializer, Product $product): JsonResponse
