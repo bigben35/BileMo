@@ -53,6 +53,7 @@ class ProductController extends AbstractController
      * @param Request $request
      * @return JsonResponse
      */
+    
     //endpoint to display all phones
     #[Route('/products', name: 'products', methods: ['GET'])]
     public function getAllProducts(ProductRepository $productRepository, SerializerInterface $serializer, Request $request, LoggerInterface $logger, TagAwareCacheInterface $cache): JsonResponse
