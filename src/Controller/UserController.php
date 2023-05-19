@@ -172,7 +172,6 @@ class UserController extends AbstractController
         $errors = $validator->validate($user);
         if ($errors->count() > 0) {
             return new JsonResponse($serializer->serialize($errors, 'json'), JsonResponse::HTTP_BAD_REQUEST, [], true);
-            //throw new HttpException(JsonResponse::HTTP_BAD_REQUEST, "La requête est invalide");
         }
 
         $em->persist($user);
@@ -209,11 +208,6 @@ class UserController extends AbstractController
         if (null === $user) {
             return new JsonResponse('Vous n\'êtes pas autorisé à supprimer cet utilisateur.', Response::HTTP_FORBIDDEN);
         }
-
-        // Vérifier si le client est lié à l'utilisateur
-        // if ($user->getClient() !== $client) {
-        // return new JsonResponse('Vous n\'êtes pas autorisé à supprimer cet utilisateur.', Response::HTTP_FORBIDDEN);
-        // }
 
         $cache->invalidateTags(["usersCache"]);
         $em->remove($user);
