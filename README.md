@@ -1,45 +1,45 @@
-# BileMo API - Projet 7 OpenClassrooms
+# BileMo API - Project 7 OpenClassrooms
 
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/0b8d754e980b47afbb53006c7e672f12)](https://app.codacy.com/gh/bigben35/BileMo/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade)
 
 # Description
-BileMo est une entreprise offrant toute une sélection de téléphones mobiles haut de gamme.
-Je suis en charge du développement de la vitrine de téléphones mobiles de l’entreprise BileMo. Le business modèle de BileMo n’est pas de vendre directement ses produits sur le site web, mais de fournir à toutes les plateformes qui le souhaitent l’accès au catalogue via une API (Application Programming Interface). Il s’agit donc de vente exclusivement en B2B (business to business).
+BileMo is a company offering a selection of high-end mobile phones.
+I am responsible for developing the showcase of mobile phones for the BileMo company. BileMo's business model is not to directly sell its products on the website, but to provide access to the catalog to any platforms that wish to via an API (Application Programming Interface). It is therefore exclusively B2B (business to business) sales.
 
-# Prérequis
+# Prerequisites
 PHP 8.0.12  
 Symfony 6
 
 # Installation
-Cloner le dépôt Git sur votre machine : **git clone** https://github.com/bigben35/BileMo.git  
-Naviguer dans le dossier du projet : **cd mon-projet-symfony**  
-Installer les dépendances avec Composer : **composer install**  
+Clone the Git repository to your machine : **git clone** https://github.com/bigben35/BileMo.git  
+Navigate to the project folder : **cd mon-projet-symfony**  
+Install dependencies with Composer : **composer install**  
 
-Créer le dossier jwt dans le dossier config (/config/jwt)  
+Create the jwt folder in the config folder (/config/jwt)  
 
-Générer vos clés publiques et privées avec ces 2 commandes :   
+Generate your public and private keys with these 2 commands :   
 **openssl genpkey -out config/jwt/private.pem -aes256 -algorithm rsa -pkeyopt rsa_keygen_bits:4096**  
 **openssl pkey -in config/jwt/private.pem -out config/jwt/public.pem -pubout**  
 
-Pensez à noter vos passwords !
+Remember to note your passwords !  
 
-Faire un **composer require symfony/console** pour pouvoir utiliser la commande symfony console au lieu de php/bin console (au choix de la personne). 
-Créer une base de données dans PhpMyAdmin (par exemple) avec le nom souhaité. Il sera utilisé dans le fichier .env pour permettre la connexion entre l'application et la base de données. Dupliquer le fichier .env et nommez-le .env.local. Pour une question de sécurité, c'est ici que vous allez mettre vos informations de connexions.  
+Run **composer require symfony/console** to use the symfony console command instead of php/bin console (personal preference). 
+Create a database in PhpMyAdmin (for example) with the desired name. It will be used in the .env file to establish the connection between the application and the database. Duplicate the .env file and name it .env.local. For security reasons, this is where you will put your connection information.  
 
-Créer la base de données : **symfony console doctrine:database:create**    
-Effectuer les migrations : **symfony console doctrine:migrations:migrate**  
-Charger les fixtures (données de démonstration) : **symfony console doctrine:fixtures:load**, pour avoir des données (Clients, Utilisateurs et Téléphones).  
-Démarrer le serveur Symfony : **symfony server:start**  
+Create the database : **symfony console doctrine:database:create**    
+Run migrations : **symfony console doctrine:migrations:migrate**  
+Load fixtures (demo data) : **symfony console doctrine:fixtures:load**, to have data (Clients, Users, and Phones).  
+Start the Symfony server : **symfony server:start**  
 
-Et voilà ! Vous pouvez maintenant accéder à l'application en naviguant vers http://localhost:8000 dans votre navigateur.  
-Vous pouvez passer en https avec la commande : **symfony server:ca:install**
+And there you go! You can now access the application by navigating to http://localhost:8000 in your browser.  
+You can switch to https with the command : **symfony server:ca:install**
 
 # Documentation
-La Documentation pour l'utilisation de l'API est disponible ici https://localhost:8000/api/doc
+The documentation for using the API is available here https://localhost:8000/api/doc
 
-# Authentification
-Pour obtenir un token d'authentification, voici la route: https://localhost:8000/api/login_check  
-Voici un des comptes Client ( à mettre dans le body de Postman par exemple) :   
+# Authentication
+To obtain an authentication token, here is the route: https://localhost:8000/api/login_check  
+Here is one of the Client accounts (to be entered in the body of Postman for example) :   
 {
     "username" : "company1@gmail.com",
     "password": "password"
